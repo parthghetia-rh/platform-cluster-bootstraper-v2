@@ -1,0 +1,6 @@
+namespace: openshift-gitops
+
+resources:
+  - namespace.yaml
+  - operator.yaml
+  - namespace.yaml

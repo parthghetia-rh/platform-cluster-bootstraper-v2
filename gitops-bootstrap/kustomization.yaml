@@ -1,0 +1,7 @@
+namespace: openshift-gitops
+
+resources:
+  - gitops-subscription
+  - argocd-instance.yaml
+  - cluster-admin-role.yaml
+  - applicationSet.yaml
