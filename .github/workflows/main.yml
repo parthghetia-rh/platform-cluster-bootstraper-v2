@@ -1,6 +1,16 @@
 name: Bootstrap OpenShift Cluster
 
 on:
+  push:
+    branches:
+      - main
+    # The workflow will ONLY run if changes occur in these specific paths
+    paths:
+      - '00-bootstrap-gitops/**'
+      - '01-bootstrap-vault/**' 
+      - '.github/workflows/main.yml'
+      
+  # It's always a good idea to keep workflow_dispatch so you can still run it manually
   workflow_dispatch:
 
 env:
@@ -71,7 +81,7 @@ jobs:
           # IMPORTANT: Save ROOT_TOKEN as a GitHub secret or External KMS so you don't lose it!
           # For the cluster, we inject it for ESO to use.
           
-          oc create namespace external-secrets-operator --dry-run=client -o yaml | oc apply -f -
+          oc new-project external-secrets-operator
           oc create secret generic vault-token -n external-secrets-operator --from-literal=token=$ROOT_TOKEN
           
           echo "Vault successfully unsealed and token injected for ESO."
