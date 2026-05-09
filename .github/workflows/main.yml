@@ -1,0 +1,91 @@
+name: Bootstrap OpenShift Cluster
+
+on:
+  workflow_dispatch:
+
+env:
+  ROSA_API_URL: ${{ secrets.ROSA_API_URL }}
+  CLUSTER_USERNAME: ${{ secrets.CLUSTER_USERNAME }}
+  CLUSTER_PASSWORD: ${{ secrets.CLUSTER_PASSWORD }}
+  OCP_VERSION: 4.21.9
+
+jobs:
+  bootstrap:
+    name: Bootstrap Vault & GitOps
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install OpenShift CLI (oc)
+        uses: redhat-actions/oc-installer@v1
+        with:
+          oc_version: '4.18'
+
+      - name: Log in to OpenShift (ROSA)
+        run: |
+          oc login ${{ secrets.ROSA_API_URL }} --username=${{ secrets.CLUSTER_USERNAME }} --password=${{ secrets.CLUSTER_PASSWORD }}
+
+      - name: Step 1 - Deploy Vault via Official Helm Chart
+        run: |
+          helm repo add hashicorp https://helm.releases.hashicorp.com
+          helm repo update
+          
+          # Adjust values like HA or storage based on workshop needs.
+          helm upgrade --install vault hashicorp/vault \
+            --namespace vault-system --create-namespace \
+            --set "server.ha.enabled=false" \
+            --set "server.dataStorage.size=10Gi"
+          
+          echo "Waiting for Vault pod to start (it will not be 'Ready' until unsealed)..."
+          while ! oc get pod vault-0 -n vault-system; do sleep 5; done
+          oc wait --for=jsonpath='{.status.phase}'=Running pod/vault-0 -n vault-system --timeout=120s
+
+      - name: Step 2 - Initialize and Unseal Vault
+        run: |
+          # Initialize Vault with 1 key share for workshop simplicity. 
+          # In prod, you'd use KMS auto-unseal or 5 shares.
+          INIT_OUTPUT=$(oc exec vault-0 -n vault -- vault operator init -key-shares=1 -key-threshold=1 -format=json)
+          
+          # Extract keys
+          UNSEAL_KEY=$(echo $INIT_OUTPUT | jq -r .unseal_keys_b64[0])
+          ROOT_TOKEN=$(echo $INIT_OUTPUT | jq -r .root_token)
+          
+          # Unseal Vault
+          oc exec vault-0 -n vault -- vault operator unseal $UNSEAL_KEY
+          
+          # IMPORTANT: Save ROOT_TOKEN as a GitHub secret or External KMS so you don't lose it!
+          # For the cluster, we inject it for ESO to use.
+          
+          oc create namespace external-secrets-operator --dry-run=client -o yaml | oc apply -f -
+          oc create secret generic vault-token -n external-secrets-operator --from-literal=token=$ROOT_TOKEN
+          
+          echo "Vault successfully unsealed and token injected for ESO."
+
+      - name: Step 3 - Deploy OpenShift GitOps & ESO
+        run: |
+          # 1. Install the Operator
+          echo "Installing OpenShift GitOps Operator..."
+          oc apply -k bootstrap-gitops/01-gitops-operator/
+          
+          # 2. Wait for OLM to register the CRDs
+          echo "Waiting for ArgoCD CRDs to become available..."
+          while ! oc get crd applicationsets.argoproj.io >/dev/null 2>&1; do 
+            echo "Waiting for ApplicationSet CRD..."
+            sleep 5
+          done
+          
+          # 3. Wait for the default ArgoCD instance to finish spinning up
+          echo "Waiting for the ArgoCD server deployment to exist..."
+          while ! oc get deployment openshift-gitops-server -n openshift-gitops >/dev/null 2>&1; do 
+            sleep 5
+          done
+          
+          echo "Waiting for the ArgoCD server to be Ready..."
+          oc wait --for=condition=Available deployment/openshift-gitops-server -n openshift-gitops --timeout=300s
+          
+          # 4. Apply the Configuration (ApplicationSet)
+          echo "Applying the ApplicationSet..."
+          oc apply -k bootstrap-gitops/02-gitops-config/
+          
+          echo "Initial Bootstrap complete. Move on to ArgoCD!!!"
