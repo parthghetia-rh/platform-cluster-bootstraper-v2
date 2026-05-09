@@ -1,7 +1,0 @@
-namespace: openshift-gitops
-
-resources:
-  - namespace.yaml
-  - operatorGroup.yaml
-  - gitops-subscription.yaml
-  - cluster-admin-role.yaml

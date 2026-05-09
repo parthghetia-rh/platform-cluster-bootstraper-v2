@@ -122,7 +122,7 @@ jobs:
         run: |
           # 1. Install the Operator
           echo "Installing OpenShift GitOps Operator..."
-          oc apply -k 00-bootstrap-gitops/gitops-operator/
+          oc apply -f 00-bootstrap-gitops/gitops-operator/
           
           # 2. Wait for OLM to register the CRDs
           echo "Waiting for ArgoCD CRDs to become available..."
@@ -142,6 +142,6 @@ jobs:
           
           # 4. Apply the Configuration (ApplicationSet)
           echo "Applying the ApplicationSet..."
-          oc apply -k 00-bootstrap-gitops/gitops-config/
+          oc apply -f 00-bootstrap-gitops/gitops-config/
           
           echo "Initial Bootstrap complete. Move on to ArgoCD!!!"
