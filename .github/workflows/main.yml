@@ -37,7 +37,7 @@ jobs:
           helm upgrade --install vault hashicorp/vault \
             --namespace vault-system \
             --create-namespace \
-            -f bootstrap-vault/values.yaml
+            -f 01-bootstrap-vault/values.yaml
           
           echo "Waiting for Vault pod to start (it will not be 'Ready' until unsealed)..."
           while ! oc get pod vault-0 -n vault-system; do sleep 5; done
@@ -68,7 +68,7 @@ jobs:
         run: |
           # 1. Install the Operator
           echo "Installing OpenShift GitOps Operator..."
-          oc apply -k bootstrap-gitops/01-gitops-operator/
+          oc apply -k 00-bootstrap-gitops/gitops-operator/
           
           # 2. Wait for OLM to register the CRDs
           echo "Waiting for ArgoCD CRDs to become available..."
@@ -88,6 +88,6 @@ jobs:
           
           # 4. Apply the Configuration (ApplicationSet)
           echo "Applying the ApplicationSet..."
-          oc apply -k bootstrap-gitops/02-gitops-config/
+          oc apply -k 00-bootstrap-gitops/gitops-config/
           
           echo "Initial Bootstrap complete. Move on to ArgoCD!!!"
