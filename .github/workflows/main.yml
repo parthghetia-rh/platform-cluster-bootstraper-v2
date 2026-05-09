@@ -65,26 +65,58 @@ jobs:
           
           echo "Vault pod is Running and ready to be unsealed!"
 
-      - name: Step 2 - Initialize and Unseal Vault
+      - name: Step 2 - Initialize and Unseal Vault (Idempotent)
         run: |
-          # Initialize Vault with 1 key share for workshop simplicity. 
-          # In prod, you'd use KMS auto-unseal or 5 shares.
-          INIT_OUTPUT=$(oc exec vault-0 -n vault-system -- vault operator init -key-shares=1 -key-threshold=1 -format=json)
+          echo "Checking Vault status..."
+          # We use '|| true' because 'vault status' returns an exit code of 2 if it's sealed, which would crash the pipeline
+          STATUS_JSON=$(oc exec vault-0 -n vault-system -- vault status -format=json || true)
           
-          # Extract keys
-          UNSEAL_KEY=$(echo $INIT_OUTPUT | jq -r .unseal_keys_b64[0])
-          ROOT_TOKEN=$(echo $INIT_OUTPUT | jq -r .root_token)
+          IS_INITIALIZED=$(echo $STATUS_JSON | jq -r .initialized)
+          IS_SEALED=$(echo $STATUS_JSON | jq -r .sealed)
           
-          # Unseal Vault
-          oc exec vault-0 -n vault-system -- vault operator unseal $UNSEAL_KEY
-          
-          # IMPORTANT: Save ROOT_TOKEN as a GitHub secret or External KMS so you don't lose it!
-          # For the cluster, we inject it for ESO to use.
-          
-          oc new-project external-secrets-operator
-          oc create secret generic vault-token -n external-secrets-operator --from-literal=token=$ROOT_TOKEN
-          
-          echo "Vault successfully unsealed and token injected for ESO."
+          if [ "$IS_INITIALIZED" = "false" ]; then
+            echo "Vault is completely fresh. Initializing now..."
+            INIT_OUTPUT=$(oc exec vault-0 -n vault-system -- vault operator init -key-shares=1 -key-threshold=1 -format=json)
+            
+            UNSEAL_KEY=$(echo $INIT_OUTPUT | jq -r .unseal_keys_b64[0])
+            ROOT_TOKEN=$(echo $INIT_OUTPUT | jq -r .root_token)
+            
+            echo "Unsealing Vault..."
+            oc exec vault-0 -n vault-system -- vault operator unseal $UNSEAL_KEY
+            
+            echo "Storing tokens for future use and ESO..."
+            oc new-project external-secrets-operator
+            
+            # Store the Root Token for the External Secrets Operator
+            oc create secret generic vault-token -n external-secrets-operator --from-literal=token=$ROOT_TOKEN
+            
+            # Store the Unseal Key securely so THIS pipeline can use it on future runs if the pod restarts
+            oc create secret generic vault-unseal-key -n vault-system --from-literal=unseal-key=$UNSEAL_KEY
+            
+            echo "Vault successfully initialized and unlocked."
+            
+          else
+            echo "Vault is already initialized."
+            
+            if [ "$IS_SEALED" = "true" ]; then
+              echo "Vault is currently SEALED. Fetching saved unseal key..."
+              
+              # Retrieve the unseal key we saved during the very first pipeline run
+              UNSEAL_KEY=$(oc get secret vault-unseal-key -n vault-system -o jsonpath='{.data.unseal-key}' | base64 --decode)
+              
+              if [ -z "$UNSEAL_KEY" ]; then
+                echo "CRITICAL ERROR: Vault is sealed but the 'vault-unseal-key' secret is missing. Cannot proceed."
+                exit 1
+              fi
+              
+              echo "Unsealing Vault..."
+              oc exec vault-0 -n vault-system -- vault operator unseal $UNSEAL_KEY
+              echo "Vault successfully unsealed."
+              
+            else
+              echo "Vault is already initialized and completely UNSEALED. Nothing to do!"
+            fi
+          fi
 
       - name: Step 3 - Deploy OpenShift GitOps & ESO
         run: |
