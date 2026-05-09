@@ -59,14 +59,14 @@ jobs:
         run: |
           # Initialize Vault with 1 key share for workshop simplicity. 
           # In prod, you'd use KMS auto-unseal or 5 shares.
-          INIT_OUTPUT=$(oc exec vault-0 -n vault -- vault operator init -key-shares=1 -key-threshold=1 -format=json)
+          INIT_OUTPUT=$(oc exec vault-0 -n vault-system -- vault operator init -key-shares=1 -key-threshold=1 -format=json)
           
           # Extract keys
           UNSEAL_KEY=$(echo $INIT_OUTPUT | jq -r .unseal_keys_b64[0])
           ROOT_TOKEN=$(echo $INIT_OUTPUT | jq -r .root_token)
           
           # Unseal Vault
-          oc exec vault-0 -n vault -- vault operator unseal $UNSEAL_KEY
+          oc exec vault-0 -n vault-system -- vault operator unseal $UNSEAL_KEY
           
           # IMPORTANT: Save ROOT_TOKEN as a GitHub secret or External KMS so you don't lose it!
           # For the cluster, we inject it for ESO to use.
