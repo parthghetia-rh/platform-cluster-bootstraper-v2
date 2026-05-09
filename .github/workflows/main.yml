@@ -120,7 +120,6 @@ jobs:
 
       - name: Step 3 - Deploy OpenShift GitOps & ESO
         run: |
-          oc new-project openshift-gitops
           # 1. Install the Operator
           echo "Installing OpenShift GitOps Operator..."
           oc apply -f 00-bootstrap-gitops/gitops-operator/
