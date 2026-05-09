@@ -39,9 +39,21 @@ jobs:
             --create-namespace \
             -f 01-bootstrap-vault/values.yaml
           
-          echo "Waiting for Vault pod to start (it will not be 'Ready' until unsealed)..."
-          while ! oc get pod vault-0 -n vault-system; do sleep 5; done
-          oc wait --for=jsonpath='{.status.phase}'=Running pod/vault-0 -n vault-system --timeout=120s
+          echo "Waiting for Vault pod to be created..."
+          while ! oc get pod vault-0 -n vault-system >/dev/null 2>&1; do 
+            sleep 5
+          done
+
+          echo "Waiting for Vault pod to enter 'Running' phase (it will not be 'Ready' until unsealed)..."
+          while [ "$(oc get pod vault-0 -n vault-system -o jsonpath='{.status.phase}')" != "Running" ]; do
+            echo "Pod is still starting... waiting 5 seconds."
+            sleep 5
+          done
+          
+          # Add a tiny buffer to ensure the Vault API inside the container is actually listening
+          sleep 10 
+          
+          echo "Vault pod is Running and ready to be unsealed!"
 
       - name: Step 2 - Initialize and Unseal Vault
         run: |
