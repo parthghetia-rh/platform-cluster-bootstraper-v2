@@ -11,7 +11,7 @@ spec:
         directories:
           # This glob pattern goes two levels deep into 'infra' 
           # It will match paths like 'infra/wave-0-secrets.yaml/eso'
-          - path: infra/*/*
+          - path: 02-infra/*/*
   template:
     metadata:
       # {{path.basename}} dynamically names the App after the folder (e.g., 'eso', 'vault')
