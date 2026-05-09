@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-bootstrapper-appset
+  namespace: openshift-gitops
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/parthghetia-rh/platform-cluster-bootstraper-v2.git
+        revision: main
+        directories:
+          # This glob pattern goes two levels deep into 'infra' 
+          # It will match paths like 'infra/wave-0-secrets.yaml/eso'
+          - path: infra/*/*
+  template:
+    metadata:
+      # {{path.basename}} dynamically names the App after the folder (e.g., 'eso', 'vault')
+      name: '{{path.basename}}'
+      namespace: openshift-gitops
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/parthghetia-rh/platform-cluster-bootstraper-v2.git
+        targetRevision: main
+        # ArgoCD will inject the discovered path here 
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - SkipDryRunOnMissingResource=true
