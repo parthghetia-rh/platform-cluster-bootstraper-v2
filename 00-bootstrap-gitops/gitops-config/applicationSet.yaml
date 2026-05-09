@@ -16,7 +16,6 @@ spec:
     metadata:
       # {{path.basename}} dynamically names the App after the folder (e.g., 'eso', 'vault')
       name: '{{path.basename}}'
-      namespace: openshift-gitops
     spec:
       project: default
       source:
