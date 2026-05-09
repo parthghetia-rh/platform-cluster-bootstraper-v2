@@ -85,10 +85,10 @@ jobs:
             oc exec vault-0 -n vault-system -- vault operator unseal $UNSEAL_KEY
             
             echo "Storing tokens for future use and ESO..."
-            oc get project external-secrets-operator >/dev/null 2>&1 || oc new-project external-secrets-operator
+            oc get project external-secrets >/dev/null 2>&1 || oc new-project external-secrets
             
             # Store the Root Token for the External Secrets Operator
-            oc create secret generic vault-token -n external-secrets-operator --from-literal=token=$ROOT_TOKEN
+            oc create secret generic vault-token -n external-secrets --from-literal=token=$ROOT_TOKEN
             
             # Store the Unseal Key securely so THIS pipeline can use it on future runs if the pod restarts
             oc create secret generic vault-unseal-key -n vault-system --from-literal=unseal-key=$UNSEAL_KEY
