@@ -20,7 +20,7 @@ jobs:
       - name: Install OpenShift CLI (oc)
         uses: redhat-actions/oc-installer@v1
         with:
-          oc_version: '4.18'
+          oc_version: '4.21.3'
 
       - name: Log in to OpenShift (ROSA)
         run: |
