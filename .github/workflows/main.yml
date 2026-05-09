@@ -22,7 +22,7 @@ jobs:
 
         #check version here: https://github.com/redhat-actions/openshift-tools-installer
         with:
-          oc: "15"
+          oc: "10"
 
       - name: Log in to OpenShift (ROSA)
         run: |
