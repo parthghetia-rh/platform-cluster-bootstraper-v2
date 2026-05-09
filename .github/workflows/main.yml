@@ -35,9 +35,9 @@ jobs:
           
           # Adjust values like HA or storage based on workshop needs.
           helm upgrade --install vault hashicorp/vault \
-            --namespace vault-system --create-namespace \
-            --set "server.ha.enabled=false" \
-            --set "server.dataStorage.size=10Gi"
+            --namespace vault-system \
+            --create-namespace \
+            -f bootstrap-vault/values.yaml
           
           echo "Waiting for Vault pod to start (it will not be 'Ready' until unsealed)..."
           while ! oc get pod vault-0 -n vault-system; do sleep 5; done
