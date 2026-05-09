@@ -30,7 +30,7 @@ jobs:
       - name: Install OpenShift CLI (oc)
         uses: redhat-actions/openshift-tools-installer@v1
 
-        #check version here: https://github.com/redhat-actions/openshift-tools-installer
+        # check version here: https://github.com/redhat-actions/openshift-tools-installer
         with:
           oc: "3"
 
