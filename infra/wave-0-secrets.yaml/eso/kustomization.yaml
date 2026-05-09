@@ -3,4 +3,4 @@ namespace: openshift-gitops
 resources:
   - namespace.yaml
   - operatorConfig.yaml
-  - namespace.yaml
+  - subscription.yaml
