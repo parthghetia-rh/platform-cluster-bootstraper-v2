@@ -1,0 +1,25 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tempo-stack
+  namespace: opentelemetry
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  storageSize: 10Gi
+  storage:
+    secret:
+      name: minio-credentials
+      type: s3
+    tls:
+      enabled: false
+  template:
+    queryFrontend:
+      jaegerQuery:
+        authentication:
+          enabled: true
+        enabled: true
+        ingress:
+          route:
+            termination: edge
+          type: route
