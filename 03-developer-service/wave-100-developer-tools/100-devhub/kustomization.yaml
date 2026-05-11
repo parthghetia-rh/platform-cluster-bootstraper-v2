@@ -1,0 +1,47 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 1-wave-operator-group.yaml
+  - 1-wave-sync-secret-argocd-token.yaml
+  - 2-wave-subscription.yaml
+  - 3-wave-config-backstage-app.yaml
+  - 3-wave-config-catalog.yaml
+  - 3-wave-config-dynamic-plugins.yaml
+  - backstage.yaml
+  - config-argocd-entities.yaml
+  - config-conditional-policies.yaml
+  - config-dashboard.yaml
+  - config-policies.yaml
+  - config-radar.yaml
+  - console-link.yaml
+  - deployment-dynamic-dash.yaml
+  - deployment-redis-cache.yaml
+  - generator-backend-secret.yaml
+  - generator-postgres-secret.yaml
+  - namespace.yaml
+  - notifications-deployment.yaml
+  - notifications-route.yaml
+  - notifications-service.yaml
+  - plugin-ansible.yaml
+  - plugin-argocd.yaml
+  - plugin-dynamic-home-page.yaml
+  - plugin-gitea.yaml
+  - plugin-github.yaml
+  - plugin-gitlab.yaml
+  - plugin-kubernetes.yaml
+  - plugin-tech-radar.yaml
+  - plugin-techdocs.yaml
+  - postgres.yaml
+  - pull-secret-credential-keycloak.yaml
+  - pull-secret-gitea-credentials.yaml
+  - pull-secret-gitlab-credentials.yaml
+  - pull-secret-oidc-client-credentials.yaml
+  - pvc-dynamic-plugins.yaml
+  - pvc-plugin-cache.yaml
+  - pvc-postgres.yaml
+  - secret-service-account-token.yaml
+  - service-account.yaml
+  - service-dynamic-dash.yaml
+  - service-postgres.yaml
+  - service-redis.yaml
