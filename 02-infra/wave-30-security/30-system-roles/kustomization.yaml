@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - crb-cluster-admins.yaml
+  - developers-che-crb.yaml
+  - developers-che-rbac.yaml
+  - developers-cluster-monitoring-crb.yaml
+  - developers-image-pusher-crb.yaml
