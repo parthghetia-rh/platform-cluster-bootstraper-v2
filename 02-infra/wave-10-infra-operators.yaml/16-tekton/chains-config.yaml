@@ -8,6 +8,7 @@ metadata:
     openshift-pipelines.tekton.dev/sa-created: "true"
     operator.tekton.dev/release-version: 1.14.3
   name: config
+  namespace: openshift-pipelines-operator-rh
 spec:
   addon:
     params:
