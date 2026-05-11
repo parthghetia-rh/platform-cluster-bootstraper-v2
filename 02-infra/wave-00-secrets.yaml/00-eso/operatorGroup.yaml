@@ -5,6 +5,4 @@ metadata:
   namespace: external-secrets-operator
   annotations:
     argocd.argoproj.io/sync-wave: "10"
-spec:
-  targetNamespaces:
-    - external-secrets-operator
+spec: {}
