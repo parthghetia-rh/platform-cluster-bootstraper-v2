@@ -5,3 +5,4 @@ resources:
   - clusterSecretStore.yaml
   - netPolAllowEgressToVault.yaml
   - serviceAccount.yaml
+  - operatorGroup.yaml
