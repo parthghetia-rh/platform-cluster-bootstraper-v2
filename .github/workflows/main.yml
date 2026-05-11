@@ -38,87 +38,51 @@ jobs:
         run: |
           oc login ${{ secrets.ROSA_API_URL }} --username=${{ secrets.CLUSTER_USERNAME }} --password=${{ secrets.CLUSTER_PASSWORD }}
 
-      - name: Step 1 - Deploy Vault via Official Helm Chart
+      - name: Step 1 - Deploy and Configure Vault (Dev Mode)
         run: |
+          echo "Adding HashiCorp Helm repository..."
           helm repo add hashicorp https://helm.releases.hashicorp.com
           helm repo update
           
-          # Adjust values like HA or storage based on workshop needs.
+          echo "Installing Vault in Dev Mode..."
           helm upgrade --install vault hashicorp/vault \
             --namespace vault-system \
             --create-namespace \
-            -f 01-bootstrap-vault/values.yaml
+            --set "global.openshift=true" \
+            --set "server.dev.enabled=true" \
+            --set "server.image.repository=docker.io/hashicorp/vault" \
+            --set "injector.image.repository=docker.io/hashicorp/vault-k8s"
           
-          echo "Waiting for Vault pod to be created..."
-          while ! oc get pod vault-0 -n vault-system >/dev/null 2>&1; do 
-            sleep 5
-          done
-
-          echo "Waiting for Vault pod to enter 'Running' phase (it will not be 'Ready' until unsealed)..."
+          echo "Waiting for Vault pod to be running..."
           while [ "$(oc get pod vault-0 -n vault-system -o jsonpath='{.status.phase}')" != "Running" ]; do
-            echo "Pod is still starting... waiting 5 seconds."
             sleep 5
           done
           
-          # Add a tiny buffer to ensure the Vault API inside the container is actually listening
+          # Add a tiny buffer to ensure the Vault API is listening
           sleep 10 
           
-          echo "Vault pod is Running and ready to be unsealed!"
-
-      - name: Step 2 - Initialize and Unseal Vault (Idempotent)
-        run: |
-          echo "Checking Vault status..."
-          # We use '|| true' because 'vault status' returns an exit code of 2 if it's sealed, which would crash the pipeline
-          STATUS_JSON=$(oc exec vault-0 -n vault-system -- vault status -format=json || true)
+          echo "Vault is Running. Configuring Kubernetes Auth..."
           
-          IS_INITIALIZED=$(echo $STATUS_JSON | jq -r .initialized)
-          IS_SEALED=$(echo $STATUS_JSON | jq -r .sealed)
+          # 1. Enable Kubernetes Auth
+          oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault auth enable kubernetes || true'
           
-          if [ "$IS_INITIALIZED" = "false" ]; then
-            echo "Vault is completely fresh. Initializing now..."
-            INIT_OUTPUT=$(oc exec vault-0 -n vault-system -- vault operator init -key-shares=1 -key-threshold=1 -format=json)
+          # 2. Tell Vault where the OpenShift API is
+          oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault write auth/kubernetes/config \
+            kubernetes_host="https://kubernetes.default.svc:443"'
             
-            UNSEAL_KEY=$(echo $INIT_OUTPUT | jq -r .unseal_keys_b64[0])
-            ROOT_TOKEN=$(echo $INIT_OUTPUT | jq -r .root_token)
+          # 3. Write the ESO policy to Vault
+          oc exec vault-0 -n vault-system -- sh -c 'echo "path \"secret/data/*\" { capabilities = [\"read\"] } path \"secret/metadata/*\" { capabilities = [\"list\", \"read\"] }" | VAULT_TOKEN=root vault policy write eso-policy -'
+          
+          # 4. Bind the Argo-managed ServiceAccount to the Vault Policy
+          oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault write auth/kubernetes/role/eso-role \
+            bound_service_account_names=eso-vault-sa \
+            bound_service_account_namespaces=external-secrets \
+            policies=eso-policy \
+            ttl=1h'
             
-            echo "Unsealing Vault..."
-            oc exec vault-0 -n vault-system -- vault operator unseal $UNSEAL_KEY
-            
-            echo "Storing tokens for future use and ESO..."
-            oc get project external-secrets >/dev/null 2>&1 || oc new-project external-secrets
-            
-            # Store the Root Token for the External Secrets Operator
-            oc create secret generic vault-token -n external-secrets --from-literal=token=$ROOT_TOKEN
-            
-            # Store the Unseal Key securely so THIS pipeline can use it on future runs if the pod restarts
-            oc create secret generic vault-unseal-key -n vault-system --from-literal=unseal-key=$UNSEAL_KEY
-            
-            echo "Vault successfully initialized and unlocked."
-            
-          else
-            echo "Vault is already initialized."
-            
-            if [ "$IS_SEALED" = "true" ]; then
-              echo "Vault is currently SEALED. Fetching saved unseal key..."
-              
-              # Retrieve the unseal key we saved during the very first pipeline run
-              UNSEAL_KEY=$(oc get secret vault-unseal-key -n vault-system -o jsonpath='{.data.unseal-key}' | base64 --decode)
-              
-              if [ -z "$UNSEAL_KEY" ]; then
-                echo "CRITICAL ERROR: Vault is sealed but the 'vault-unseal-key' secret is missing. Cannot proceed."
-                exit 1
-              fi
-              
-              echo "Unsealing Vault..."
-              oc exec vault-0 -n vault-system -- vault operator unseal $UNSEAL_KEY
-              echo "Vault successfully unsealed."
-              
-            else
-              echo "Vault is already initialized and completely UNSEALED. Nothing to do!"
-            fi
-          fi
+          echo "Vault setup is complete! Handing off to Argo CD for ESO configuration."
 
-      - name: Step 3 - Deploy OpenShift GitOps & ESO
+      - name: Step 2 - Deploy OpenShift GitOps
         run: |
           # 1. Install the Operator
           echo "Installing OpenShift GitOps Operator..."
