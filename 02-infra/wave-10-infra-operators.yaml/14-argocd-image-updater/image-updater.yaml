@@ -6,6 +6,7 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater
+  namespace: openshift-gitops
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -15,6 +16,8 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater
+  namespace: openshift-gitops
+
 rules:
 - apiGroups:
   - ""
@@ -34,6 +37,7 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater
+  namespace: openshift-gitops
 rules:
 - apiGroups:
   - ""
@@ -59,6 +63,7 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater
+  namespace: openshift-gitops
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -75,6 +80,7 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater
+  namespace: openshift-gitops
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -91,6 +97,7 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater-config
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater-config
+  namespace: openshift-gitops
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -99,6 +106,7 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater-ssh-config
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater-ssh-config
+  namespace: openshift-gitops
 ---
 apiVersion: v1
 kind: Secret
@@ -116,6 +124,7 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater
+  namespace: openshift-gitops
 spec:
   selector:
     matchLabels:
