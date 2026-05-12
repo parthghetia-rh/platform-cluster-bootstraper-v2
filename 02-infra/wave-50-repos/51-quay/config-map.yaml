@@ -6,7 +6,7 @@ metadata:
 spec:
   refreshInterval: "15s"
   secretStoreRef:
-    name: "kubernetes-secrets-store"
+    name: "eso-admin-secret-store"
     kind: ClusterSecretStore
   target:
     name: "init-config-bundle-secret"
