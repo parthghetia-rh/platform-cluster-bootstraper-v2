@@ -6,8 +6,5 @@ resources:
   - data-science-cluster.yaml
   - dscInitialization.yaml
   - namespace.yaml
-  - notebook-culling.yaml
   - operator-group.yaml
-  - runtime-dual-gpu-vllm.yaml
-  - runtime-remote-dual-gpu-vllm.yaml
   - subscription.yaml
