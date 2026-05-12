@@ -71,7 +71,7 @@ jobs:
             kubernetes_host="https://kubernetes.default.svc:443"'
             
           # 3. Write the ESO policy to Vault
-          oc exec vault-0 -n vault-system -- sh -c 'echo "path \"secret/data/*\" { capabilities = [\"read\"] } path \"secret/metadata/*\" { capabilities = [\"list\", \"read\"] }" | VAULT_TOKEN=root vault policy write eso-policy -'
+          oc exec vault-0 -n vault-system -- sh -c 'echo "path \"secret/data/*\" { capabilities = [\"create\", \"read\", \"update\", \"delete\"] } path \"secret/metadata/*\" { capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"] }" | VAULT_TOKEN=root vault policy write eso-policy -'
           
           # 4. Bind the Argo-managed ServiceAccount to the Vault Policy
           oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault write auth/kubernetes/role/eso-role \
