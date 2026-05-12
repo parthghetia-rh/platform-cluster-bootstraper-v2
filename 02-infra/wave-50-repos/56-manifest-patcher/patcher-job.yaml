@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apply-vault-domain
+  namespace: openshift-config
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      serviceAccountName: vault-manifest-patcher
+      restartPolicy: OnFailure
+      containers:
+        - name: patcher
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "Fetching raw value from Vault secret..."
+              
+              # 1. String Manipulation
+              # Removes 'https://api.' from the start AND ':443' from the end
+              CLEAN_DOMAIN=$(echo "$RAW_VAULT_URL" | sed -e 's|^https://api.||' -e 's|:443$||')
+              
+              echo "Original: $RAW_VAULT_URL"
+              echo "Cleaned:  $CLEAN_DOMAIN"
+
+              # 2. Patch the ConsoleLink
+              echo "Patching ConsoleLink 'gitea'..."
+              oc patch consolelink gitea --type=merge -p "{\"spec\":{\"href\":\"https://gitea.${CLEAN_DOMAIN}\"}}"
+
+              # 3. Patch the Route in the tools namespace
+              echo "Patching Route 'gitea-ui'..."
+              oc patch route gitea-ui -n tools --type=merge -p "{\"spec\":{\"host\":\"gitea.${CLEAN_DOMAIN}\"}}"
+
+              echo "Vault domain successfully synchronized to manifests."
+          env:
+            - name: RAW_VAULT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: "rosa-token"
+                  key: "rosa-domain"
