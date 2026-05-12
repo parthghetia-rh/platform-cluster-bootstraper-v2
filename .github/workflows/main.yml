@@ -83,8 +83,23 @@ jobs:
             bound_service_account_namespaces=external-secrets \
             policies=eso-policy \
             ttl=1h'
+        
+          echo "Parsing raw ROSA URL from secrets..."
+          
+          # Use sed to strip 'https://api.' from the start (^) and ':443' from the end ($)
+          CLEAN_DOMAIN=$(echo "$ROSA_API_URL" | sed -e 's|^https://api.||' -e 's|:443$||')
+          
+          # We echo this just to verify it looks right in the GitHub Actions logs 
+          # (It won't expose a password, just the routing domain)
+          echo "Cleaned domain: $CLEAN_DOMAIN"
+          
+          echo "Pushing formatted domain to Vault..."
+          oc exec vault-0 -n vault-system -- env VAULT_TOKEN=root vault kv put secret/rosa-domain \
+            domain="$CLEAN_DOMAIN"
             
-          echo "Vault setup is complete! Handing off to Argo CD for ESO configuration."
+          echo "ROSA domain successfully stored in Vault!"
+            
+          echo "Vault setup is complete!"
           echo "Pushing ROSA token to Vault..."
           oc exec vault-0 -n vault-system -- env VAULT_TOKEN=root vault kv put secret/rosa-token \
             token="$ROSA_TOKEN"
@@ -94,7 +109,7 @@ jobs:
             AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
             AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
             
-          echo "Secrets successfully populated in Vault!"
+          echo "Secrets successfully populated in Vault! Handing off to ArgoCD"
 
       - name: Step 2 - Deploy OpenShift GitOps
         run: |
