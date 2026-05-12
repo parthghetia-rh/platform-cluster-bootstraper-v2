@@ -18,6 +18,12 @@ spec:
       value: "true"
     - name: pipelineTemplates
       value: "true"
+    - name: communityResolverTasks
+      value: 'true'	
+    - name: resolverTasks	
+      value: 'true'	
+    - name: resolverStepActions	
+      value: 'true'
   chain:
 
     #################################
@@ -67,7 +73,6 @@ spec:
     await-sidecar-readiness: true
     coschedule: workspaces
     default-service-account: pipeline
-    disable-affinity-assistant: true
     disable-creds-init: false
     enable-api-fields: beta
     enable-bundles-resolver: true
@@ -79,7 +84,6 @@ spec:
     enable-param-enum: false
     enable-provenance-in-status: true
     enable-step-actions: false
-    enable-tekton-oci-bundles: true
     enforce-nonfalsifiability: none
     keep-pod-on-cancel: false
     max-result-size: 4096
