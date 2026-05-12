@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: minio
   namespace: minio-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "52"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   labels:
     app: minio
 spec:
