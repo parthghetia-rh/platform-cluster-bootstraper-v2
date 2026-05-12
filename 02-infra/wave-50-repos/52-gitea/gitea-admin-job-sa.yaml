@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: gitea-admin-job-sa
-  namespace: gitea
-  annotations:
-    argocd.argoproj.io/sync-wave: "2"
