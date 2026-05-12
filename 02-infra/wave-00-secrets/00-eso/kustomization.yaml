@@ -6,3 +6,4 @@ resources:
   - netPolAllowEgressToVault.yaml
   - serviceAccount.yaml
   - operatorGroup.yaml
+  - kubernetesSecretStore.yaml
