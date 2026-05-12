@@ -6,5 +6,5 @@ resources:
   - chains-config.yaml
   - operatorGroup.yaml
   - rbac-container-builds.yaml
-  - secrets-cosign-keys.yaml
+  # - secrets-cosign-keys.yaml
   - subscription.yaml
