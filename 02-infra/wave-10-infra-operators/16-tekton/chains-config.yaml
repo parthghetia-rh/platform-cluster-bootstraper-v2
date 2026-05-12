@@ -6,7 +6,7 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   labels:
     openshift-pipelines.tekton.dev/sa-created: "true"
-    operator.tekton.dev/release-version: 1.14.3
+    operator.tekton.dev/release-version: 1.22.0
   name: config
   namespace: openshift-pipelines-operator-rh
 spec:
