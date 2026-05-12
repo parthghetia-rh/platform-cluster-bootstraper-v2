@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: minio-api
+  namespace: minio-operator
+spec:
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+  selector:
+    app: minio
+
