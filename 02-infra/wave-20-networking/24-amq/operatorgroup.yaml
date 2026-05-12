@@ -1,0 +1,9 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: amqstreams
+  namespace: kafka-streams
+  annotations:
+    argocd.argoproj.io/sync-wave: "24"
+spec:
+  upgradeStrategy: Default
