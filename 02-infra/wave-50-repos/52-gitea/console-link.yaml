@@ -2,6 +2,7 @@ apiVersion: console.openshift.io/v1
 kind: ConsoleLink
 metadata:
   name: gitea
+  namespace: gitea
 spec:
   applicationMenu:
     section: Artifacts Repository
