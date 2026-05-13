@@ -42,9 +42,3 @@ spec:
               oc patch route gitea-ui -n gitea --type=merge -p "{\"spec\":{\"host\":\"gitea.${DOMAIN}\"}}"
 
               echo "Successfully synchronized Vault domain to manifests."
-          env:
-            - name: RAW_VAULT_URL
-              valueFrom:
-                secretKeyRef:
-                  name: "rosa-token"
-                  key: "rosa-domain"
