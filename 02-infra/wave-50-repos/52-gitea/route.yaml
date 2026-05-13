@@ -7,7 +7,7 @@ metadata:
   name: gitea-http
   namespace: gitea
 spec:
-  host: "gitea.{{ .Values.domain }}"
+  host: "gitea.PLACEHOLDER_DOMAIN"
   path: /
   port:
     targetPort: http

@@ -33,7 +33,7 @@ replacements:
       # 2. Patch the Route
       - select:
           kind: Route
-          name: gitea-ui
+          name: gitea-http
         fieldPaths:
           - spec.host
         options:
