@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: global-domain-config
+data:
+  ROSA_DOMAIN: "DUMMY_DOMAIN" # GitHub Actions will overwrite this
