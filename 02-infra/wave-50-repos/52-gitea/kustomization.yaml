@@ -19,7 +19,8 @@ replacements:
         fieldPaths:
           - spec.href
         options:
-          delimiter: "PLACEHOLDER_DOMAIN"
+          delimiter: "."
+          index: 1 # Replaces everything AFTER the first dot
           
       # 2. Patch the Route
       - select:
@@ -28,7 +29,8 @@ replacements:
         fieldPaths:
           - spec.host
         options:
-          delimiter: "PLACEHOLDER_DOMAIN"
+          delimiter: "."
+          index: 1 # Replaces everything AFTER the first dot
           
       # 3. FUTURE MANIFESTS GO HERE
       # - select:
