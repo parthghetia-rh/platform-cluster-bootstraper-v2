@@ -27,6 +27,10 @@ jobs:
   bootstrap:
     name: Bootstrap Vault & GitOps
     runs-on: ubuntu-latest
+    # CRITICAL: This explicitly requests write access for this specific job
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
