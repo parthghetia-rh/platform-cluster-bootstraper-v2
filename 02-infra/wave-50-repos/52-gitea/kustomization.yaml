@@ -5,6 +5,14 @@ resources:
   - namespace.yaml
   - domain-configmap.yaml
   - console-link.yaml
+  - gitea-admin-job-rb.yaml
+  - gitea-admin-job-sa.yaml
+  - gitea-oidc-setup-job.yaml
+  - pull-keyloack-oidc-client.yaml
+  - push-admin-password.yaml
+  - rolebinding.yaml
+  - route.yaml
+  - secret-repo-org-template.yaml
 
 replacements:
   - source:
