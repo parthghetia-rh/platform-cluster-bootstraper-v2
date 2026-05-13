@@ -19,24 +19,29 @@ spec:
             - -c
             - |
               set -e
-              echo "Fetching raw value from Vault secret..."
               
-              # 1. String Manipulation
-              # Removes 'https://api.' from the start AND ':443' from the end
-              CLEAN_DOMAIN=$(echo "$RAW_VAULT_URL" | sed -e 's|^https://api.||' -e 's|:443$||')
+              echo "Fetching clean domain from vault-secrets-ns/rosa-domain-secret..."
               
-              echo "Original: $RAW_VAULT_URL"
-              echo "Cleaned:  $CLEAN_DOMAIN"
+              # Pull the secret value directly. 
+              # No cleaning needed since GitHub Actions handled it!
+              DOMAIN=$(oc get secret rosa-domain-secret -n vault-secrets-ns -o jsonpath='{.data.DOMAIN}' | base64 -d)
 
-              # 2. Patch the ConsoleLink
-              echo "Patching ConsoleLink 'gitea'..."
-              oc patch consolelink gitea --type=merge -p "{\"spec\":{\"href\":\"https://gitea.${CLEAN_DOMAIN}\"}}"
+              if [ -z "$DOMAIN" ]; then
+                echo "ERROR: Domain value is empty in secret!"
+                exit 1
+              fi
 
-              # 3. Patch the Route in the tools namespace
-              echo "Patching Route 'gitea-ui'..."
-              oc patch route gitea-ui -n tools --type=merge -p "{\"spec\":{\"host\":\"gitea.${CLEAN_DOMAIN}\"}}"
+              echo "Using Domain: $DOMAIN"
 
-              echo "Vault domain successfully synchronized to manifests."
+              # 1. Patch the Cluster-wide ConsoleLink
+              echo "Updating ConsoleLink..."
+              oc patch consolelink gitea -n gitea --type=merge -p "{\"spec\":{\"href\":\"https://gitea.${DOMAIN}\"}}"
+
+              # 2. Patch the Route in the gitea namespace
+              echo "Updating Route..."
+              oc patch route gitea-ui -n gitea --type=merge -p "{\"spec\":{\"host\":\"gitea.${DOMAIN}\"}}"
+
+              echo "Successfully synchronized Vault domain to manifests."
           env:
             - name: RAW_VAULT_URL
               valueFrom:
