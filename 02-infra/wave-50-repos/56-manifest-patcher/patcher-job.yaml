@@ -20,11 +20,11 @@ spec:
             - |
               set -e
               
-              echo "Fetching clean domain from keycloak/rosa-domain..."
+              echo "Fetching clean domain from keycloak/rosa-token..."
               
               # Pull the secret value directly. 
               # No cleaning needed since GitHub Actions handled it!
-              DOMAIN=$(oc get secret rosa-domain -n keycloak -o jsonpath='{.data.DOMAIN}' | base64 -d)
+              DOMAIN=$(oc get secret rosa-token -n keycloak -o jsonpath='{.data.DOMAIN}' | base64 -d)
 
               if [ -z "$DOMAIN" ]; then
                 echo "ERROR: Domain value is empty in secret!"
