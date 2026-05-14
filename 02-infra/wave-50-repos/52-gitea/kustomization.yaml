@@ -3,10 +3,10 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - domain-configmap.yaml
   - console-link.yaml
   - gitea-admin-job-rb.yaml
   - gitea-admin-job-sa.yaml
+  - gitea-admin-job-role.yaml
   - gitea-oidc-setup-job.yaml
   - pull-keycloak-oidc-client.yaml
   - push-admin-password.yaml
