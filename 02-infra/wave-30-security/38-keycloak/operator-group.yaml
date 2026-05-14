@@ -8,4 +8,5 @@ metadata:
 spec:
   targetNamespaces:
   - keycloak
+  - openshift-config
   upgradeStrategy: Default
