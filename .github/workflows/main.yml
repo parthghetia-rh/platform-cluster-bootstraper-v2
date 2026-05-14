@@ -50,6 +50,7 @@ jobs:
         run: |
           echo "Adding HashiCorp Helm repository..."
           helm repo add hashicorp https://helm.releases.hashicorp.com
+          
           helm repo update
           
           echo "Installing Vault in Dev Mode..."
