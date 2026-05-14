@@ -3,4 +3,4 @@ kind: Kustomization
 
 resources:
   - externalSecret.yaml
-  - oauth-patch.yaml
+  - rosa-idp-job.yaml

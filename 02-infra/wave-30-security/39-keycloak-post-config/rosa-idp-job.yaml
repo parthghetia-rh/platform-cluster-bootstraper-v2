@@ -1,0 +1,73 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: configure-rosa-idp
+  namespace: keycloak
+  annotations:
+    # This tells ArgoCD to run this ONLY after all other resources are synced and healthy
+    argocd.argoproj.io/hook: PostSync
+    # This cleans up the pod automatically after it succeeds so it doesn't clutter your cluster
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: rosa-cli
+          # Use an image that has the rosa CLI installed. 
+          # You can use your existing ansible-runner image if it has rosa, or a custom one.
+          image: quay.io/my-org/rosa-cli-image:latest 
+          env:
+            - name: ROSA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: rosa-token
+                  key: token
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-client-secret-openshift
+                  key: clientSecret
+            - name: CLIENT_ID
+              value: "openshift"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Logging into ROSA OCM..."
+              rosa login --token="${ROSA_TOKEN}"
+
+              echo "Fetching ROSA cluster name..."
+              # Outputs the list as JSON and grabs the 'name' of the first cluster in the array
+              CLUSTER_NAME=$(rosa list clusters -o json | jq -r '.[0].name')
+              
+              if [ -z "$CLUSTER_NAME" ] || [ "$CLUSTER_NAME" == "null" ]; then
+                echo "Error: Could not retrieve cluster name."
+                exit 1
+              fi
+              
+              echo "Found cluster: ${CLUSTER_NAME}"
+              
+              echo "Checking if Keycloak IDP already exists..."
+              IDP_EXISTS=$(rosa list idps --cluster="${CLUSTER_NAME}" --region="${REGION}" -o json | jq '[.[] | select(.name == "keycloak")] | length')
+              
+              if [ "$IDP_EXISTS" -gt 0 ]; then
+                echo "IDP 'keycloak' already exists. Skipping creation."
+                exit 0
+              fi
+              
+              echo "Creating Keycloak IDP in ROSA..."
+              rosa create idp \
+                --cluster="${CLUSTER_NAME}" \
+                --name="keycloak" \
+                --type="openid" \
+                --client-id="${CLIENT_ID}" \
+                --client-secret="${CLIENT_SECRET}" \
+                --issuer-url="https://keycloak-keycloak.${DOMAIN}/auth/realms/${CLIENT_ID}" \
+                --mapping-method="claim" \
+                --email-claims="email" \
+                --name-claims="name" \
+                --groups-claims="groups" \
+                --username-claims="preferred_username"
+              
+              echo "ROSA IDP creation successful!"
