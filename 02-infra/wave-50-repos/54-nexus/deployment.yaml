@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-nexus3
+  namespace: nexus
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-nexus3
+  template:
+    metadata:
+      labels:
+        app: docker-nexus3
+    spec:
+      containers:
+        - name: docker-nexus3
+          image: 'quay.io/na-east-launch/docker-nexus3:latest'
+          ports:
+            - containerPort: 8080
+              protocol: "TCP"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 1Gi
+            limits:
+              cpu: '4'
+              memory: 4Gi
+          volumeMounts:
+            - mountPath: /nexus-data
+              name: nexus
+      volumes:
+        - name: nexus
+          persistentVolumeClaim:
+            claimName: nexus-data

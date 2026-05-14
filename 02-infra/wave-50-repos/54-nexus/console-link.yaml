@@ -1,0 +1,11 @@
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: nexus
+  namespace: nexus
+spec:
+  applicationMenu:
+    section: Artifacts Repository
+  href: "https://nexus-web.<path:secret/data/rosa-domain#domain>"
+  location: ApplicationMenu
+  text: Nexus Repository Web Dashboard
