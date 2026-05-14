@@ -10,7 +10,6 @@ resources:
   - pull-secret-credential-keycloak.yaml
   - pull-secret-intial-users.yaml
   - pull-secret-rosa-token.yaml
-  - push-secret-client-openshift.yaml
   - push-secret-credential-keycloak.yaml
   - realm-openshift.yaml
   - subscription.yaml

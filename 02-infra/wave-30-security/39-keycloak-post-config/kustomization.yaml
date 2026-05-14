@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - externalSecret.yaml
   - rosa-idp-job.yaml
+  - push-secret-client-openshift.yaml
