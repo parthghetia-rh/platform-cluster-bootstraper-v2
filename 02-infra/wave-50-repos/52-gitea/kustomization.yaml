@@ -14,31 +14,31 @@ resources:
   - route.yaml
   - secret-repo-org-template.yaml
 
-replacements:
-  - source:
-      kind: ConfigMap
-      name: global-domain-config
-      fieldPath: data.ROSA_DOMAIN
-    targets:
-      # 1. Patch the ConsoleLink
-      - select:
-          kind: ConsoleLink
-          name: gitea
-        fieldPaths:
-          - spec.href
-        options:
-          delimiter: "."
-          index: 1 # Replaces everything AFTER the first dot
+# replacements:
+#   - source:
+#       kind: ConfigMap
+#       name: global-domain-config
+#       fieldPath: data.ROSA_DOMAIN
+#     targets:
+#       # 1. Patch the ConsoleLink
+#       - select:
+#           kind: ConsoleLink
+#           name: gitea
+#         fieldPaths:
+#           - spec.href
+#         options:
+#           delimiter: "."
+#           index: 1 # Replaces everything AFTER the first dot
           
-      # 2. Patch the Route
-      - select:
-          kind: Route
-          name: gitea-http
-        fieldPaths:
-          - spec.host
-        options:
-          delimiter: "."
-          index: 1 # Replaces everything AFTER the first dot
+#       # 2. Patch the Route
+#       - select:
+#           kind: Route
+#           name: gitea-http
+#         fieldPaths:
+#           - spec.host
+#         options:
+#           delimiter: "."
+#           index: 1 # Replaces everything AFTER the first dot
           
       # 3. FUTURE MANIFESTS GO HERE
       # - select:
