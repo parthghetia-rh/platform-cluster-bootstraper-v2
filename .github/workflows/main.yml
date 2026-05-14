@@ -50,7 +50,7 @@ jobs:
         run: |
           echo "Adding HashiCorp Helm repository..."
           helm repo add hashicorp https://helm.releases.hashicorp.com
-          
+
           helm repo update
           
           echo "Installing Vault in Dev Mode..."
@@ -75,19 +75,38 @@ jobs:
           # 1. Enable Kubernetes Auth
           oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault auth enable kubernetes || true'
           
-          # 2. Tell Vault where the OpenShift API is
+          # 1. Update the K8s Auth Config (Adding CA cert is best practice in OpenShift)
           oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault write auth/kubernetes/config \
-            kubernetes_host="https://kubernetes.default.svc:443"'
-            
-          # 3. Write the ESO policy to Vault
-          oc exec vault-0 -n vault-system -- sh -c 'echo "path \"secret/data/*\" { capabilities = [\"create\", \"read\", \"update\", \"delete\"] } path \"secret/metadata/*\" { capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"] }" | VAULT_TOKEN=root vault policy write eso-policy -'
-          
-          # 4. Bind the ESO ServiceAccount to the Vault Policy
+            kubernetes_host="https://kubernetes.default.svc:443" \
+            kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+                  
+          # 2. Write the ESO Policy (CRUD + Patch + Mount discovery)
+          oc exec vault-0 -n vault-system -- sh -c 'echo "
+          path \"secret/data/*\" { capabilities = [\"create\", \"read\", \"update\", \"patch\", \"delete\"] }
+          path \"secret/metadata/*\" { capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"] }
+          path \"sys/mounts\" { capabilities = [\"read\"] }
+          " | VAULT_TOKEN=root vault policy write eso-policy -'
+                  
+          # 3. Write the ArgoCD Policy (Strictly Read-Only)
+          oc exec vault-0 -n vault-system -- sh -c 'echo "
+          path \"secret/data/*\" { capabilities = [\"read\"] }
+          path \"secret/metadata/*\" { capabilities = [\"read\", \"list\"] }
+          " | VAULT_TOKEN=root vault policy write argocd-readonly-policy -'
+                  
+          # 4. Bind the ESO Role (Strictly to the External Secrets namespace)
+          # Note: Replace 'external-secrets' with your specific ESO service account name if it is not the default
           oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault write auth/kubernetes/role/eso-role \
-            bound_service_account_names="*" \
-            bound_service_account_namespaces=external-secrets,openshift-gitops \
-            policies=eso-policy \
-            ttl=1h'
+            bound_service_account_names="external-secrets" \
+            bound_service_account_namespaces="external-secrets" \
+            policies="eso-policy" \
+            ttl=1h max_ttl=4h'
+                  
+          # 5. Bind the ArgoCD Role (Strictly to the GitOps namespace)
+          oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault write auth/kubernetes/role/argocd-role \
+            bound_service_account_names="argocd-repo-server" \
+            bound_service_account_namespaces="openshift-gitops" \
+            policies="argocd-readonly-policy" \
+            ttl=1h max_ttl=4h'
           
           echo "Vault setup is complete!"
           
