@@ -8,4 +8,4 @@ spec:
     section: Artifacts Repository
   href: https://gitea."<path:secret/data/rosa-domain#domain>"
   location: ApplicationMenu
-  text: Gitea Dashboard
+  text: <path:secret/data/rosa-domain#domain>
