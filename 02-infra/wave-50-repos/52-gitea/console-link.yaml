@@ -6,6 +6,6 @@ metadata:
 spec:
   applicationMenu:
     section: Artifacts Repository
-  href: https://gitea."<path:secret/data/sso-client#client_secret>"
+  href: https://gitea."<path:secret/data/rosa-domain#domain>"
   location: ApplicationMenu
   text: Gitea Dashboard
