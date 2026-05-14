@@ -83,20 +83,34 @@ jobs:
           
           # 4. Bind the ESO ServiceAccount to the Vault Policy
           oc exec vault-0 -n vault-system -- sh -c 'VAULT_TOKEN=root vault write auth/kubernetes/role/eso-role \
-            bound_service_account_names=eso-vault-sa \
-            bound_service_account_namespaces=external-secrets \
+            bound_service_account_names="*" \
+            bound_service_account_namespaces=external-secrets,openshift-gitops \
             policies=eso-policy \
             ttl=1h'
-            
-          echo "Vault setup is complete!"
-          echo "Pushing ROSA token to Vault..."
-          oc exec vault-0 -n vault-system -- env VAULT_TOKEN=root vault kv put secret/rosa-token \
-            token="$ROSA_TOKEN"
           
-          echo "Pushing AWS credentials to Vault..."
-          oc exec vault-0 -n vault-system -- env VAULT_TOKEN=root vault kv put secret/aws-credentials \
-            AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
-            AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+          echo "Vault setup is complete!"
+          
+          RAW_URL="$ROSA_API_URL"
+          echo "Received raw URL: $RAW_URL"
+
+          CLEAN_DOMAIN=$(echo "$RAW_URL" | sed -e 's|^https://api.||' -e 's|:443$||')
+          echo "Cleaned Domain: $CLEAN_DOMAIN"
+
+          
+          echo "Pushing all credentials and configs to Vault..."
+          oc exec vault-0 -n vault-system -- sh -c "
+            export VAULT_TOKEN=root
+
+            vault kv put secret/rosa-token \
+              token=\"$ROSA_TOKEN\"
+
+            vault kv put secret/aws-credentials \
+              AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\" \
+              AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"
+
+            vault kv put secret/rosa-domain \
+              domain=\"$CLEAN_DOMAIN\"
+          "
             
           echo "Secrets successfully populated in Vault! Handing off to ArgoCD"
 
@@ -104,56 +118,35 @@ jobs:
         run: |
           # 1. Install the Operator
           echo "Installing OpenShift GitOps Operator..."
-          oc apply -f 00-bootstrap-gitops/gitops-operator/
+          oc apply -f 00-bootstrap-gitops/gitops-operator/gitops-subscription.yaml
           
           # 2. Wait for OLM to register the CRDs
           echo "Waiting for ArgoCD CRDs to become available..."
-          while ! oc get crd applicationsets.argoproj.io >/dev/null 2>&1; do 
-            echo "Waiting for ApplicationSet CRD..."
+          # Added argocds.argoproj.io to the wait condition to ensure it's safe to apply the instance
+          while ! oc get crd argocds.argoproj.io applicationsets.argoproj.io >/dev/null 2>&1; do 
+            echo "Waiting for ArgoCD CRDs..."
             sleep 5
           done
           
-          # 3. Wait for the default ArgoCD instance to finish spinning up
+          # 3. Apply the Custom ArgoCD Instance (Performance overrides & AVP sidecar)
+          echo "Applying Custom ArgoCD Instance..."
+          oc apply -f 00-bootstrap-gitops/gitops-operator/argocd-instance.yaml
+          
+          # 4. Wait for the ArgoCD server deployment to exist
           echo "Waiting for the ArgoCD server deployment to exist..."
           while ! oc get deployment openshift-gitops-server -n openshift-gitops >/dev/null 2>&1; do 
             sleep 5
           done
           
-          echo "Waiting for the ArgoCD server to be Ready..."
+          echo "Waiting for the ArgoCD API server to be Ready..."
           oc wait --for=condition=Available deployment/openshift-gitops-server -n openshift-gitops --timeout=300s
           
-          # 4. Apply the Configuration (ApplicationSet)
+          echo "Waiting for the ArgoCD Repo Server (Vault Sidecar) to be Ready..."
+          # CRITICAL: Wait for the repo server so AVP is online before the AppSet drops
+          oc wait --for=condition=Available deployment/openshift-gitops-repo-server -n openshift-gitops --timeout=300s
+          
+          # 5. Apply the Configuration (ApplicationSet)
           echo "Applying the ApplicationSet..."
           oc apply -f 00-bootstrap-gitops/gitops-config/
           
           echo "Initial Bootstrap complete. Move on to ArgoCD!!!"
-      
-      - name: Clean URL and Update ConfigMap
-        run: |
-          RAW_URL=$ROSA_API_URL
-          echo "Received raw URL: $RAW_URL"
-          
-          # 1. String Manipulation: Remove 'https://api.' and ':443'
-          CLEAN_DOMAIN=$(echo "$RAW_URL" | sed -e 's|^https://api.||' -e 's|:443$||')
-          echo "Cleaned Domain: $CLEAN_DOMAIN"
-          
-          # 2. Update the ConfigMap using sed
-          # This replaces whatever value currently exists next to ROSA_DOMAIN:
-          sed -i "s|ROSA_DOMAIN: .*|ROSA_DOMAIN: \"$CLEAN_DOMAIN\"|" 02-infra/wave-50-repos/52-gitea/domain-configmap.yaml
-
-      - name: Commit and Push Changes
-        run: |
-          # Set up the GitHub Actions bot git identity
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          git add .
-          
-          # Check if there are actual changes before committing
-          if git diff --staged --quiet; then
-            echo "Domain is already up to date. No commit needed."
-          else
-            git commit -m "chore(gitops): dynamically update ROSA routing domain"
-            git push
-            echo "Successfully committed new domain to the repository!"
-          fi

@@ -1,0 +1,256 @@
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: openshift-gitops
+  namespace: openshift-gitops
+spec:
+  networkPolicy:
+    enabled: true
+  server:
+    replicas: 2
+    autoscale:
+      enabled: false
+    grpc:
+      ingress:
+        enabled: false
+    ingress:
+      enabled: false
+    resources:
+      limits:
+        cpu: '1'
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    route:
+      enabled: true
+    service:
+      type: ''
+  grafana:
+    enabled: false
+    ingress:
+      enabled: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+    route:
+      enabled: false
+  monitoring:
+    enabled: false
+  notifications:
+    enabled: false
+  prometheus:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  initialSSHKnownHosts: {}
+  imageUpdater:
+    enabled: false
+  sso:
+    dex:
+      openShiftOAuth: true
+      resources:
+        limits:
+          cpu: 500m
+          memory: 256Mi
+        requests:
+          cpu: 250m
+          memory: 128Mi
+    provider: dex
+  applicationSet:
+    resources:
+      limits:
+        cpu: '2'
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    webhookServer:
+      ingress:
+        enabled: false
+      route:
+        enabled: false
+  rbac:
+    defaultPolicy: ''
+    policy: |
+      g, system:cluster-admins, role:admin
+      g, cluster-admins, role:admin
+    scopes: '[groups]'
+  repo:
+    initContainers:
+      - args:
+          - 'curl -L -o /custom-tools/argocd-vault-plugin https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v1.17.0/argocd-vault-plugin_1.17.0_linux_amd64 && chmod +x /custom-tools/argocd-vault-plugin'
+        command:
+          - sh
+          - '-c'
+        image: 'registry.access.redhat.com/ubi8/ubi-minimal:latest'
+        name: download-tools
+        resources: {}
+        volumeMounts:
+          - mountPath: /custom-tools
+            name: custom-tools
+    replicas: 3
+    resources:
+      limits:
+        cpu: '2'
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    sidecarContainers:
+      - command:
+          - /var/run/argocd/argocd-cmp-server
+        env:
+          - name: AVP_TYPE
+            value: vault
+          - name: VAULT_ADDR
+            value: 'http://vault.vault-system.svc:8200'
+          - name: AVP_AUTH_TYPE
+            value: k8s
+          - name: AVP_K8S_ROLE
+            value: eso-role
+        name: avp-kustomize
+        resources: {}
+        securityContext:
+          runAsNonRoot: true
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: tmp
+          - mountPath: /custom-tools
+            name: custom-tools
+          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            name: cmp-plugin
+            subPath: avp-kustomize.yaml
+          - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+            name: avp-sa-token
+    volumes:
+      - configMap:
+          name: cmp-avp-kustomize
+        name: cmp-plugin
+      - emptyDir: {}
+        name: custom-tools
+      - name: avp-sa-token
+        projected:
+          sources:
+            - serviceAccountToken:
+                expirationSeconds: 3600
+                path: token
+  resourceExclusions: |
+    - apiGroups:
+      - ""
+      - discovery.k8s.io
+      clusters:
+      - '*'
+      kinds:
+      - Endpoints
+      - EndpointSlice
+    - apiGroups:
+      - apiregistration.k8s.io
+      clusters:
+      - '*'
+      kinds:
+      - APIService
+    - apiGroups:
+      - coordination.k8s.io
+      clusters:
+      - '*'
+      kinds:
+      - Lease
+    - apiGroups:
+      - authentication.k8s.io
+      - authorization.k8s.io
+      clusters:
+      - '*'
+      kinds:
+      - SelfSubjectReview
+      - TokenReview
+      - LocalSubjectAccessReview
+      - SelfSubjectAccessReview
+      - SelfSubjectRulesReview
+      - SubjectAccessReview
+    - apiGroups:
+      - certificates.k8s.io
+      clusters:
+      - '*'
+      kinds:
+      - CertificateSigningRequest
+    - apiGroups:
+      - cert-manager.io
+      clusters:
+      - '*'
+      kinds:
+      - CertificateRequest
+    - apiGroups:
+      - cilium.io
+      clusters:
+      - '*'
+      kinds:
+      - CiliumIdentity
+      - CiliumEndpoint
+      - CiliumEndpointSlice
+    - apiGroups:
+      - kyverno.io
+      - reports.kyverno.io
+      - wgpolicyk8s.io
+      clusters:
+      - '*'
+      kinds:
+      - PolicyReport
+      - ClusterPolicyReport
+      - EphemeralReport
+      - ClusterEphemeralReport
+      - AdmissionReport
+      - ClusterAdmissionReport
+      - BackgroundScanReport
+      - ClusterBackgroundScanReport
+      - UpdateRequest
+    - apiGroups:
+      - tekton.dev
+      clusters:
+      - '*'
+      kinds:
+      - TaskRun
+      - PipelineRun
+  ha:
+    enabled: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+  tls:
+    ca: {}
+  redis:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+  controller:
+    processors:
+      operation: 50
+      status: 50
+    resources:
+      limits:
+        cpu: '2'
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    sharding:
+      enabled: true
+      replicas: 2
