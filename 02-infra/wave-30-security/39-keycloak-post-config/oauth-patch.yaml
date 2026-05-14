@@ -1,0 +1,26 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+  nnotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "40"
+spec:
+  identityProviders:
+    - name: "keycloak"
+      mappingMethod: claim
+      type: OpenID
+      openID:
+        clientID: "openshift"
+        clientSecret:
+          name: keycloak-client-secret # References the target name from our ExternalSecret
+        issuer: "https://keycloak-keycloak.<path:secret/data/rosa-domain#domain>/auth/realms/openshift"
+        claims:
+          groups:
+            - groups
+          email:
+            - email
+          name:
+            - name
+          preferredUsername:
+            - preferred_username
