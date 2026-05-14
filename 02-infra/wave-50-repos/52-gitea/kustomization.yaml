@@ -1,15 +1,15 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+# apiVersion: kustomize.config.k8s.io/v1beta1
+# kind: Kustomization
 
-resources:
-  - namespace.yaml
-  - domain-configmap.yaml
-  - console-link.yaml
-  - gitea-admin-job-rb.yaml
-  - gitea-admin-job-sa.yaml
-  - gitea-oidc-setup-job.yaml
-  - pull-keycloak-oidc-client.yaml
-  - push-admin-password.yaml
-  - rolebinding.yaml
-  - route.yaml
-  - secret-repo-org-template.yaml
+# resources:
+#   - namespace.yaml
+#   - domain-configmap.yaml
+#   - console-link.yaml
+#   - gitea-admin-job-rb.yaml
+#   - gitea-admin-job-sa.yaml
+#   - gitea-oidc-setup-job.yaml
+#   - pull-keycloak-oidc-client.yaml
+#   - push-admin-password.yaml
+#   - rolebinding.yaml
+#   - route.yaml
+#   - secret-repo-org-template.yaml
