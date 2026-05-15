@@ -36,13 +36,9 @@ spec:
             - |
               set -e 
               
-              # 2. 🟢 Create a local bin folder in /tmp and add it to our PATH
+              # 2. 🟢 Create a local bin folder in /tmp just for ROSA
               mkdir -p /tmp/bin
               export PATH=/tmp/bin:$PATH
-              
-              echo "Downloading jq..."
-              curl -sL -o /tmp/bin/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
-              chmod +x /tmp/bin/jq
               
               echo "Downloading ROSA CLI..."
               curl -sL -o /tmp/rosa.tar.gz https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-linux.tar.gz
