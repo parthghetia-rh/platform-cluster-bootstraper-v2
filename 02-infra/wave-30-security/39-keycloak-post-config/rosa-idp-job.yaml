@@ -35,6 +35,8 @@ spec:
             - -c
             - |
               set -e 
+
+              export HOME=/tmp
               
               mkdir -p /tmp/bin
               export PATH=/tmp/bin:$PATH
