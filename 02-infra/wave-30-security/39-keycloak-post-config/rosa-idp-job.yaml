@@ -60,7 +60,7 @@ spec:
               rosa login --token="${ROSA_TOKEN}"
 
               echo "Fetching ROSA cluster name..."
-              CLUSTER_NAME=$(rosa list clusters -o json | jq -r '.[0].name')
+              CLUSTER_NAME=$(rosa list clusters --region $REGION -o json | jq -r '.[0].name')
               
               if [ -z "$CLUSTER_NAME" ] || [ "$CLUSTER_NAME" == "null" ]; then
                 echo "Error: Could not retrieve cluster name. Check your ROSA_TOKEN."
