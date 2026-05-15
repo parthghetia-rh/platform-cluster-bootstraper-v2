@@ -23,7 +23,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: keycloak-client-secret-openshift
-                  key: clientSecret
+                  key: CLIENT_SECRET
             - name: CLIENT_ID
               value: "openshift"
             - name: DOMAIN
