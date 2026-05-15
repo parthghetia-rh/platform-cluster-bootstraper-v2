@@ -4,6 +4,8 @@ metadata:
   labels:
     app: gitea
     app.kubernetes.io/instance: gitea
+  annotations:
+    argocd.argoproj.io/sync-wave: "53"
   name: gitea-http
   namespace: gitea
 spec:

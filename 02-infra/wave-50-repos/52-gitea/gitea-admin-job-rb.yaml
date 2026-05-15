@@ -4,7 +4,7 @@ metadata:
   name: gitea-admin-job-rb
   namespace: gitea
   annotations:
-    argocd.argoproj.io/sync-wave: "53"
+    argocd.argoproj.io/sync-wave: "52"
 subjects:
 - kind: ServiceAccount
   name: gitea-admin-job-sa
