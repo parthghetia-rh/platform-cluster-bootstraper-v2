@@ -6,8 +6,8 @@ resources:
   - keycloak.yaml
   - namespace.yaml
   - operator-group.yaml
-  - pull-secret-client-openshift.yaml
-  - pull-secret-credential-keycloak.yaml
+  # - pull-secret-client-openshift.yaml
+  # - pull-secret-credential-keycloak.yaml
   - pull-secret-intial-users.yaml
   - pull-secret-rosa-token.yaml
   - push-secret-credential-keycloak.yaml
