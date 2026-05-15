@@ -19,6 +19,16 @@ spec:
                 secretKeyRef:
                   name: keycloak-rosa-token
                   key: ROSA_TOKEN
+            - name: AWS_ACCESS_ID
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-rosa-token
+                  key: AWS_ACCESS_ID
+            - name: AWS_ACCESS_ID
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-rosa-token
+                  key: AWS_SECRET_ACCESS_KEY
             - name: CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
