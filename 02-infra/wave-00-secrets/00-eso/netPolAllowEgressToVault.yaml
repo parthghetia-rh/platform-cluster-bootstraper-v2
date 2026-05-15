@@ -13,6 +13,7 @@ spec:
   policyTypes:
     - Egress
   egress:
+    # 1. Allow traffic to Vault
     - to:
         - namespaceSelector:
             matchLabels:
@@ -20,3 +21,23 @@ spec:
       ports:
         - protocol: TCP
           port: 8200
+          
+    # 2. Allow traffic to the OpenShift API (for reading CRDs and writing status)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+      ports:
+        - protocol: TCP
+          port: 443
+          
+    # 3. Allow traffic to OpenShift DNS (to resolve vault-system.svc)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
