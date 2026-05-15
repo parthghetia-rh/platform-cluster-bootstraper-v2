@@ -46,6 +46,10 @@ spec:
               chmod +x /tmp/bin/rosa
               rm -f /tmp/rosa.tar.gz
 
+              echo "Downloading jq..."
+              curl -sL -o /tmp/bin/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+              chmod +x /tmp/bin/jq
+
               echo "Testing installations..."
               jq --version
               rosa version
