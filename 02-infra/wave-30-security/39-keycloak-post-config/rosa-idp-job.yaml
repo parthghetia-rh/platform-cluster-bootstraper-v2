@@ -12,7 +12,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: rosa-cli
-          image: registry.access.redhat.com/ubi8/ubi-minimal:latest 
+          image: registry.access.redhat.com/ubi8/toolbox:latest
           env:
             - name: ROSA_TOKEN
               valueFrom:
@@ -36,7 +36,6 @@ spec:
             - |
               set -e 
               
-              # 2. 🟢 Create a local bin folder in /tmp just for ROSA
               mkdir -p /tmp/bin
               export PATH=/tmp/bin:$PATH
               
