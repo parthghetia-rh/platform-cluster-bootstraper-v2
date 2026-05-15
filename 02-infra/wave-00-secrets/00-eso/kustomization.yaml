@@ -3,7 +3,7 @@ resources:
   - externalSecretsConfig.yaml
   - subscription.yaml
   - clusterSecretStore.yaml
-  # - netPolAllowEgressToVault.yaml
+  - netPolAllowEgressToVault.yaml
   - serviceAccount.yaml
   - operatorGroup.yaml
   - kubernetesSecretStore.yaml
