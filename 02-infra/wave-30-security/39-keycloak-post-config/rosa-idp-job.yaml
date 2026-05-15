@@ -18,7 +18,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: rosa-token
-                  key: token
+                  key: ROSA_TOKEN
             - name: CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
