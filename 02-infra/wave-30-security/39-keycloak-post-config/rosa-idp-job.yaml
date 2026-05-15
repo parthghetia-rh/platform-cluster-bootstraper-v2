@@ -34,17 +34,26 @@ spec:
             - /bin/bash
             - -c
             - |
-              set -e # Fails the script immediately if any command errors out
+              set -e 
               
-              echo "Installing required tools (jq, tar, gzip)..."
-              microdnf install -y tar gzip jq > /dev/null 2>&1
+              # 2. 🟢 Create a local bin folder in /tmp and add it to our PATH
+              mkdir -p /tmp/bin
+              export PATH=/tmp/bin:$PATH
+              
+              echo "Downloading jq..."
+              curl -sL -o /tmp/bin/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+              chmod +x /tmp/bin/jq
               
               echo "Downloading ROSA CLI..."
-              curl -sL -o rosa.tar.gz https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-linux.tar.gz
-              tar -xf rosa.tar.gz
-              mv rosa /usr/local/bin/rosa
-              chmod +x /usr/local/bin/rosa
-              rm -f rosa.tar.gz
+              curl -sL -o /tmp/rosa.tar.gz https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-linux.tar.gz
+              tar -xf /tmp/rosa.tar.gz -C /tmp
+              mv /tmp/rosa /tmp/bin/rosa
+              chmod +x /tmp/bin/rosa
+              rm -f /tmp/rosa.tar.gz
+
+              echo "Testing installations..."
+              jq --version
+              rosa version
 
               echo "Logging into ROSA OCM..."
               rosa login --token="${ROSA_TOKEN}"
@@ -60,7 +69,6 @@ spec:
               echo "Found cluster: ${CLUSTER_NAME}"
               
               echo "Checking if Keycloak IDP already exists..."
-              # Note: Added '|| true' so jq returning 0 results doesn't crash the script due to 'set -e'
               IDP_EXISTS=$(rosa list idps --cluster="${CLUSTER_NAME}" --region="${REGION}" -o json | jq '[.[] | select(.name == "keycloak")] | length' || echo "0")
               
               if [ "$IDP_EXISTS" -gt 0 ]; then
