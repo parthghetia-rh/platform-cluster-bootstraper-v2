@@ -17,7 +17,7 @@ spec:
             - name: ROSA_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: rosa-token
+                  name: keycloak-rosa-token
                   key: ROSA_TOKEN
             - name: CLIENT_SECRET
               valueFrom:
