@@ -4,9 +4,7 @@ metadata:
   name: configure-rosa-idp
   namespace: keycloak
   annotations:
-    # This tells ArgoCD to run this ONLY after all other resources are synced and healthy
     argocd.argoproj.io/hook: PostSync
-    # This cleans up the pod automatically after it succeeds so it doesn't clutter your cluster
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
 spec:
   template:
@@ -14,9 +12,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: rosa-cli
-          # Use an image that has the rosa CLI installed. 
-          # You can use your existing ansible-runner image if it has rosa, or a custom one.
-          image: quay.io/my-org/rosa-cli-image:latest 
+          image: registry.access.redhat.com/ubi8/ubi-minimal:latest 
           env:
             - name: ROSA_TOKEN
               valueFrom:
@@ -30,26 +26,42 @@ spec:
                   key: clientSecret
             - name: CLIENT_ID
               value: "openshift"
+            - name: DOMAIN
+              value: "apps.your-cluster-domain.com" # <-- UPDATE THIS
+            - name: REGION
+              value: "us-east-2"                    # <-- UPDATE THIS
           command:
             - /bin/bash
             - -c
             - |
+              set -e # Fails the script immediately if any command errors out
+              
+              echo "Installing required tools (jq, tar, gzip)..."
+              microdnf install -y tar gzip jq > /dev/null 2>&1
+              
+              echo "Downloading ROSA CLI..."
+              curl -sL -o rosa.tar.gz https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-linux.tar.gz
+              tar -xf rosa.tar.gz
+              mv rosa /usr/local/bin/rosa
+              chmod +x /usr/local/bin/rosa
+              rm -f rosa.tar.gz
+
               echo "Logging into ROSA OCM..."
               rosa login --token="${ROSA_TOKEN}"
 
               echo "Fetching ROSA cluster name..."
-              # Outputs the list as JSON and grabs the 'name' of the first cluster in the array
               CLUSTER_NAME=$(rosa list clusters -o json | jq -r '.[0].name')
               
               if [ -z "$CLUSTER_NAME" ] || [ "$CLUSTER_NAME" == "null" ]; then
-                echo "Error: Could not retrieve cluster name."
+                echo "Error: Could not retrieve cluster name. Check your ROSA_TOKEN."
                 exit 1
               fi
               
               echo "Found cluster: ${CLUSTER_NAME}"
               
               echo "Checking if Keycloak IDP already exists..."
-              IDP_EXISTS=$(rosa list idps --cluster="${CLUSTER_NAME}" --region="${REGION}" -o json | jq '[.[] | select(.name == "keycloak")] | length')
+              # Note: Added '|| true' so jq returning 0 results doesn't crash the script due to 'set -e'
+              IDP_EXISTS=$(rosa list idps --cluster="${CLUSTER_NAME}" --region="${REGION}" -o json | jq '[.[] | select(.name == "keycloak")] | length' || echo "0")
               
               if [ "$IDP_EXISTS" -gt 0 ]; then
                 echo "IDP 'keycloak' already exists. Skipping creation."
