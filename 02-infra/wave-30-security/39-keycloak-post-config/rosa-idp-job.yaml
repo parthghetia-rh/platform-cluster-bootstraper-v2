@@ -91,7 +91,7 @@ spec:
               rosa create idp \
                 --cluster="${CLUSTER_NAME}" \
                 --name="keycloak" \
-                --region $REGION. \
+                --region $REGION \
                 --type="openid" \
                 --client-id="${CLIENT_ID}" \
                 --client-secret="${CLIENT_SECRET}" \
