@@ -89,12 +89,12 @@ spec:
               echo "Creating Keycloak IDP in ROSA..."
               rosa create idp \
                 --cluster="${CLUSTER_NAME}" \
-                --name="keycloak" \
+                --name="openshift" \
                 --region $REGION \
                 --type="openid" \
                 --client-id="${CLIENT_ID}" \
                 --client-secret="${CLIENT_SECRET}" \
-                --issuer-url="https://keycloak-keycloak.${DOMAIN}/auth/realms/${CLIENT_ID}" \
+                --issuer-url="https://keycloak-keycloak.apps.rosa.${DOMAIN}/auth/realms/${CLIENT_ID}" \
                 --mapping-method="claim" \
                 --email-claims="email" \
                 --name-claims="name" \
