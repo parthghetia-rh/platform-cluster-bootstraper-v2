@@ -35,8 +35,6 @@ spec:
                   key: CLIENT_SECRET
             - name: CLIENT_ID
               value: "openshift"
-            - name: DOMAIN
-              value: "apps.your-cluster-domain.com" # <-- UPDATE THIS
             - name: REGION
               value: "us-east-2"                    # <-- UPDATE THIS
           command:
@@ -94,11 +92,15 @@ spec:
                 --type="openid" \
                 --client-id="${CLIENT_ID}" \
                 --client-secret="${CLIENT_SECRET}" \
-                --issuer-url="https://keycloak-keycloak.apps.rosa.${DOMAIN}/auth/realms/${CLIENT_ID}" \
+                --issuer-url="https://keycloak-keycloak.apps.rosa.<path:secret/data/rosa-domain#domain>/auth/realms/${CLIENT_ID}" \
                 --mapping-method="claim" \
                 --email-claims="email" \
                 --name-claims="name" \
                 --groups-claims="groups" \
                 --username-claims="preferred_username"
+              
+              ISSUER_URL=https://keycloak-keycloak.apps.rosa.<path:secret/data/rosa-domain#domain>/auth/realms/${CLIENT_ID}
+
+              echo "Keycloak configured with the following issuer url: $ISSUER_URL"
               
               echo "ROSA IDP creation successful!"
