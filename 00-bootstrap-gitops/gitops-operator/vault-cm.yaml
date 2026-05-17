@@ -1,0 +1,21 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cmp-avp-kustomize
+  namespace: openshift-gitops
+data:
+  avp-kustomize.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: avp-kustomize
+    spec:
+      allowConcurrency: true
+      discover:
+        fileName: kustomization.yaml
+      generate:
+        command:
+          - bash # Change to bash
+          - "-c"
+          # Add set -e -o pipefail
+          - "set -e -o pipefail; kustomize build . | /custom-tools/argocd-vault-plugin generate -"

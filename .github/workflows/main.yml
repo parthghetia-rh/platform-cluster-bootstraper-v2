@@ -137,6 +137,7 @@ jobs:
           
           # 3. Apply the Custom ArgoCD Instance (Performance overrides & AVP sidecar)
           echo "Applying Custom ArgoCD Instance..."
+          oc apply -f 00-bootstrap-gitops/gitops-operator/vault-cm.yaml
           oc apply -f 00-bootstrap-gitops/gitops-operator/argocd-instance.yaml
           
           # 4. Wait for the ArgoCD server deployment to exist
@@ -154,6 +155,6 @@ jobs:
           
           # 5. Apply the Configuration (ApplicationSet)
           echo "Applying the ApplicationSet..."
-          oc apply -f 00-bootstrap-gitops/gitops-config/
+          oc apply -f 00-bootstrap-gitops/gitops-post-install-config/
           
           echo "Initial Bootstrap complete. Move on to ArgoCD!!!"
