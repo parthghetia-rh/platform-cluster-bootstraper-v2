@@ -7,7 +7,7 @@ resources:
   - namespace-build.yaml
   - namespace.yaml
   - npm-global-config.yaml
-  - prepull-dotnet-python.yaml
-  - prepull-udi.yaml
+  # - prepull-dotnet-python.yaml
+  # - prepull-udi.yaml
   - roles-template.yaml
   - subscription.yaml
