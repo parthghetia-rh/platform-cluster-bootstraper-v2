@@ -13,10 +13,10 @@ metadata:
 spec:
   client:
     redirectUris:
-      - "https://oauth-openshift.<path:secret/data/rosa-domain#domain>/oauth2callback/*"
-      - "https://backstage-developer-hub-backstage.<path:secret/data/rosa-domain#domain>/*"
-      - "http://backstage-developer-hub-backstage.<path:secret/data/rosa-domain#domain>/*"
-      - "https://gitea.<path:secret/data/rosa-domain#domain>/user/oauth2/keycloak/callback"
+      - "https://oauth-openshift.apps.rosa.<path:secret/data/rosa-domain#domain>/oauth2callback/*"
+      - "https://backstage-developer-hub-backstage.apps.rosa.<path:secret/data/rosa-domain#domain>/*"
+      - "http://backstage-developer-hub-backstage.apps.rosa.<path:secret/data/rosa-domain#domain>/*"
+      - "https://gitea.apps.rosa.<path:secret/data/rosa-domain#domain>/user/oauth2/keycloak/callback"
       - "*"
     protocolMappers:
       - name: groups
