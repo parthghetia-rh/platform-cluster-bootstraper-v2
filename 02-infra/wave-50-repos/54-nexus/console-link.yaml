@@ -6,6 +6,6 @@ metadata:
 spec:
   applicationMenu:
     section: Artifacts Repository
-  href: "https://nexus-web.<path:secret/data/rosa-domain#domain>"
+  href: "https://nexus-web.apps.rosa.<path:secret/data/rosa-domain#domain>"
   location: ApplicationMenu
   text: Nexus Repository Web Dashboard

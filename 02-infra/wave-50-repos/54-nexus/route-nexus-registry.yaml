@@ -7,7 +7,7 @@ metadata:
   name: nexus-registry
   namespace: nexus
 spec:
-  host: "nexus.<path:secret/data/rosa-domain#domain>"
+  host: "nexus.apps.rosa.<path:secret/data/rosa-domain#domain>"
   port:
     targetPort: 5000-tcp
   tls:
