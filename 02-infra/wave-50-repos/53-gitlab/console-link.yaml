@@ -5,6 +5,6 @@ metadata:
 spec:
   applicationMenu:
     section: Artifacts Repository
-  href: "https://gitlab.<path:secret/data/rosa-domain#domain"
+  href: "https://gitlab.apps.rosa.<path:secret/data/rosa-domain#domain"
   location: ApplicationMenu
   text: GitLab Dashboard

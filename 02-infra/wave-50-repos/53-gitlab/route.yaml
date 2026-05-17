@@ -4,7 +4,7 @@ metadata:
   name: gitlab
   namespace: gitlab-system
 spec:
-  host: "gitlab.<path:secret/data/rosa-domain#domain>"
+  host: "gitlab.apps.rosa<path:secret/data/rosa-domain#domain>"
   path: /
   to:
     name: gitlab-webservice-default

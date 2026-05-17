@@ -9,7 +9,7 @@ metadata:
   name: gitea-http
   namespace: gitea
 spec:
-  host: "gitea.<path:secret/data/rosa-domain#domain>"
+  host: "gitea.apps.rosa.<path:secret/data/rosa-domain#domain>"
   path: /
   port:
     targetPort: http
