@@ -117,9 +117,9 @@ jobs:
 
           echo "Creating initial Keycloak users..."
 
-          oc get secret keycloak -n external-secrets >/dev/null 2>&1 || oc create secret generic keycloak-initial-users \
+          oc get secret my-secret -n my-namespace >/dev/null 2>&1 || oc create secret generic keycloak-initial-users \
             --from-literal=users="$KEYCLOAK_INITIAL_USERS" \
-            -n external-secrets | oc apply -f -
+            -n external-secrets
 
       - name: Step 2 - Deploy OpenShift GitOps
         run: |
