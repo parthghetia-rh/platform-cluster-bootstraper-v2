@@ -1,0 +1,18 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: gitlab
+  namespace: gitlab-system
+spec:
+  host: "gitlab.<path:secret/data/rosa-domain#domain>"
+  path: /
+  to:
+    name: gitlab-webservice-default
+    weight: 100
+    kind: Service
+  port:
+    targetPort: http-workhorse
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

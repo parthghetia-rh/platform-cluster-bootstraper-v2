@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - console-link.yaml
+  - gitlab.yaml
+  - namespace.yaml
+  - operator-group.yaml
+  - pull-keycloak-oidc-client.yaml
+  - push-gitlab-cert.yaml
+  - push-root-password.yaml
+  - rbac.yaml
+  - route.yaml
+  - secret-repo-org-template.yaml
+  - secret-runner-token.yaml
+  - subscription.yaml

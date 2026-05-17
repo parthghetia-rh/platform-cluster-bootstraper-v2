@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitlab-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "53"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec: {}

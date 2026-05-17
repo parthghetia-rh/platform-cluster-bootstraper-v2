@@ -1,0 +1,16 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  labels:
+    operators.coreos.com/gitlab-operator-kubernetes.gitlab-system: ""
+  name: gitlab-operator-kubernetes
+  annotations:
+    argocd.argoproj.io/sync-wave: "53"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  channel: stable
+  installPlanApproval: Manual
+  name: gitlab-operator-kubernetes
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: gitlab-operator-kubernetes.v2.11.3

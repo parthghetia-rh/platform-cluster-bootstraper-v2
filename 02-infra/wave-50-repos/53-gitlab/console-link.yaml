@@ -1,0 +1,10 @@
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: gitlab
+spec:
+  applicationMenu:
+    section: Artifacts Repository
+  href: "https://gitlab.<path:secret/data/rosa-domain#domain"
+  location: ApplicationMenu
+  text: GitLab Dashboard
