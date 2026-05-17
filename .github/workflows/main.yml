@@ -119,7 +119,7 @@ jobs:
 
           oc create secret generic keycloak-initial-users \
             --from-literal=users="$KEYCLOAK_INITIAL_USERS" \
-            -n external-secrets
+            -n external-secrets || true
 
       - name: Step 2 - Deploy OpenShift GitOps
         run: |
