@@ -1,15 +1,15 @@
-# apiVersion: operators.coreos.com/v1alpha1
-# kind: Subscription
-# metadata:
-#   name: openshift-distributed-tracing
-#   namespace: openshift-distributed-tracing
-#   annotations:
-#     argocd.argoproj.io/sync-wave: "64"
-# spec:
-#   channel: stable
-#   installPlanApproval: Automatic
-#   name: opentelemetry-product
-#   source: redhat-operators
-#   sourceNamespace: openshift-marketplace
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-distributed-tracing
+  namespace: openshift-distributed-tracing
+  annotations:
+    argocd.argoproj.io/sync-wave: "64"
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: opentelemetry-product
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
 
-# Deprecated
+Deprecated
