@@ -7,5 +7,3 @@ metadata:
     argocd.argoproj.io/sync-wave: "64"
 spec:
   upgradeStrategy: Default
-
-Deprecated

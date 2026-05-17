@@ -6,5 +6,3 @@ metadata:
     argocd.argoproj.io/sync-wave: "64"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec: {}
-
-Deprecated
