@@ -21,10 +21,10 @@ spec:
             client_options:
               identifier: "openshift"
               secret: "{{`{{ .CLIENT_SECRET }}`}}"
-              redirect_uri: "https://gitlab.{{ .Values.domain }}/users/auth/openid_connect/callback"
+              redirect_uri: "https://gitlab.apps.rosa.<path:secret/data/rosa-domain#domain>/users/auth/openid_connect/callback"
             scope: ["openid", "profile", "email"]
             response_type: "code"
-            issuer: "https://keycloak-keycloak.{{ .Values.domain }}/auth/realms/openshift"
+            issuer: "https://keycloak-keycloak.apps.rosa.<path:secret/data/rosa-domain#domain>/auth/realms/openshift"
             discovery: true
             uid_field: "uid"
   data:
