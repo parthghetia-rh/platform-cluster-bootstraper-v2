@@ -17,7 +17,7 @@ spec:
       global:
         edition: ce
         hosts:
-          domain: "{{ .Values.domain }}"
+          domain: "<path:secret/data/rosa-domain#domain"
         appConfig:
           # https://docs.gitlab.com/topics/autodevops/
           autoDevOps:
