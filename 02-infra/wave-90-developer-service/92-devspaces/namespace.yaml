@@ -3,6 +3,6 @@ kind: Namespace
 metadata:
   name: devspaces
   annotations:
-    argocd.argoproj.io/sync-wave: "102"
+    argocd.argoproj.io/sync-wave: "92"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec: {}

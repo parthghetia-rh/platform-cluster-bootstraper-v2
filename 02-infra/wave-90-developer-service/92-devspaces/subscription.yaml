@@ -4,11 +4,10 @@ metadata:
   name: devspaces
   namespace: devspaces
   annotations:
-    argocd.argoproj.io/sync-wave: "102"
+    argocd.argoproj.io/sync-wave: "92"
 spec:
   channel: stable
   installPlanApproval: Automatic
   name: devspaces
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: devspacesoperator.v3.27.0
