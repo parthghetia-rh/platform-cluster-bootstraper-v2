@@ -11,3 +11,4 @@ resources:
   # - prepull-udi.yaml
   - roles-template.yaml
   - subscription.yaml
+  - operatorGroup.yaml
